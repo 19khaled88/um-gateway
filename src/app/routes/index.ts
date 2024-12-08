@@ -1,16 +1,18 @@
-// import express from 'express';
+import express from 'express';
 
-// const router = express.Router();
+import { AcademicSemesterRouter } from '../modules/academicSemester/route';
 
-// const moduleRoutes = [
-//   {
-//     path: '',
-//     routes: ""
-//   }
-// ];
+const router = express.Router();
 
-// moduleRoutes.forEach((route) => {
-//   router.use(route.path, route.routes);
-// });
+const moduleRoutes = [
+  {
+    path: '/academic-semesters-gateway',
+    routes: AcademicSemesterRouter
+  }
+];
 
-// export default router;
+moduleRoutes.forEach((route) => {
+  router.use(route.path, route.routes);
+});
+
+export default router;
