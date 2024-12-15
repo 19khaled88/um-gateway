@@ -1,5 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import config from '../config';
+import ApiError from '../errors/apiError';
+import httpStatus from 'http-status';
 
 const HttpService = (baseUrl: string): AxiosInstance => {
   const instance = axios.create({
@@ -15,7 +17,7 @@ const HttpService = (baseUrl: string): AxiosInstance => {
       return config;
     },
     (error) => {
-      return error;
+      return Promise.reject(error);
     }
   );
 
@@ -24,7 +26,22 @@ const HttpService = (baseUrl: string): AxiosInstance => {
       return response.data;
     },
     (error) => {
-      return Promise.reject(error);
+      if(error.response){
+        switch(error.response.status){
+          case 404:
+            return Promise.reject(new ApiError(httpStatus.NOT_FOUND,error.response.data.message));
+          case 500:
+            return Promise.reject(new ApiError(httpStatus.INTERNAL_SERVER_ERROR,'Internal Server Error'));
+          default:
+            return Promise.reject(error)
+          
+          
+        }
+      }else if(error.request){
+        return Promise.reject(new ApiError(httpStatus.NO_CONTENT,'No response from server'))
+      }else{
+        return Promise.reject(new Error(error.message));
+      }
     }
   );
 

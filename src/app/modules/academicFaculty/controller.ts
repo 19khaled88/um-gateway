@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { AcademicSemesterService } from './service';
+import { AcademicFacultyService } from './service';
 import sendResponse from '../../../shared/response';
 
 const createController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await AcademicSemesterService.createService(req);
+    const result = await AcademicFacultyService.createService(req);
     sendResponse(res, result);
   } catch (error) {
     next(error);
@@ -13,7 +13,7 @@ const createController = async (req: Request, res: Response, next: NextFunction)
 
 const getAllController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await AcademicSemesterService.getAllService(req);
+    const result = await AcademicFacultyService.getAllService(req);
     sendResponse(res, result);
   } catch (error) {
     next(error);
@@ -22,27 +22,16 @@ const getAllController = async (req: Request, res: Response, next: NextFunction)
 
 const updateController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    
-    const result = await AcademicSemesterService.updateService(req);
+    const result = await AcademicFacultyService.updateService(req);
     sendResponse(res, result);
   } catch (error) {
-    
-    next(error);
-  }
-};
-const deleteController = async (req: Request, res: Response, next: NextFunction) => {
-  try {
- 
-    const result = await AcademicSemesterService.deleteService(req);
-    sendResponse(res, result);
-  } catch (error) {
+    console.log('error',error)
     next(error);
   }
 };
 
-export const AcademiSemesterController = {
+export const AcademicFacultyController = {
   createController,
   getAllController,
-  updateController,
-  deleteController
+  updateController
 };
