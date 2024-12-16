@@ -4,7 +4,7 @@ import { IGenericResponse } from '../../../interfaces/common';
 
 const createService = async (req: Request):Promise<IGenericResponse>=> {
 
-  const response:IGenericResponse = await HttpService.post('/academic-faculty/create', req.body, {
+  const response:IGenericResponse = await HttpService.post('/academic-department/create', req.body, {
     headers: {
       Authorization: req.headers.authorization
     }
@@ -14,7 +14,7 @@ const createService = async (req: Request):Promise<IGenericResponse>=> {
 
 const getAllService = async (req: Request):Promise<IGenericResponse>=> {
 
-  const response:IGenericResponse = await HttpService.get ('/academic-faculty/all',  {
+  const response:IGenericResponse = await HttpService.get ('/academic-department/all',  {
     params:req.query,
     headers: {
       Authorization: req.headers.authorization
@@ -26,7 +26,7 @@ const getAllService = async (req: Request):Promise<IGenericResponse>=> {
 const updateService = async (req: Request)=> {
   const {id} = req.params;
 
-  const response:IGenericResponse = await HttpService.put (`/academic-faculty/${id}`, req.body, {
+  const response:IGenericResponse = await HttpService.put (`/academic-department/${id}`, req.body, {
 
     headers: {
       Authorization: req.headers.authorization
@@ -38,7 +38,7 @@ const updateService = async (req: Request)=> {
 const deleteService = async (req: Request)=> {
   const {id} = req.params;
 
-  const response:IGenericResponse = await HttpService.delete (`/academic-faculty/${id}`,  {
+  const response:IGenericResponse = await HttpService.delete (`/academic-department/${id}`,  {
 
     headers: {
       Authorization: req.headers.authorization
@@ -47,7 +47,7 @@ const deleteService = async (req: Request)=> {
   return response;
 };
 
-export const AcademicFacultyService = {
+export const AcademicDepartmentService = {
   createService,
   getAllService,
   updateService,
