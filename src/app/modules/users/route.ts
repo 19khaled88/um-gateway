@@ -13,7 +13,7 @@ router.post('/create-student',
     FileUploadCloudinary.upload.single('file'),
     (req:Request,res:Response,next:NextFunction) =>{
         req.body = UserValidationApiGateway.createStudentValidation.parse(JSON.parse(req.body.data))
-        return UserController.create(req,res,next)
+        return UserController.create_student(req,res,next)
     }
 )
 

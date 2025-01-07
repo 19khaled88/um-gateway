@@ -14,6 +14,12 @@ const HttpService = (baseUrl: string): AxiosInstance => {
 
   instance.interceptors.request.use(
     (config) => {
+      // Extract the token dynamically (e.g., from a global state, cookies, or localStorage)
+      // const authKey = config.headers.Authorization; // Replace this with your token retrieval logic
+      
+      // if (authKey) {
+      //   config.headers.Authorization = `Bearer ${authKey}`;
+      // }
       return config;
     },
     (error) => {
@@ -34,8 +40,6 @@ const HttpService = (baseUrl: string): AxiosInstance => {
             return Promise.reject(new ApiError(httpStatus.INTERNAL_SERVER_ERROR,'Internal Server Error'));
           default:
             return Promise.reject(error)
-          
-          
         }
       }else if(error.request){
         return Promise.reject(new ApiError(httpStatus.NO_CONTENT,'No response from server'))

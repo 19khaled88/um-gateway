@@ -10,6 +10,7 @@ const auth =
       return new Promise(async (resolve, reject) => {
         const token = req.headers.authorization;
 
+       
         if (!token) {
           return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized'));
         }
