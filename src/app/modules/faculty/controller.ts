@@ -32,11 +32,13 @@ const allFaculty=async(req:Request,res:Response,next:NextFunction)=>{
 }
 
 const update = async(req:Request,res:Response,next:NextFunction)=>{
+    
     try {
         const result = await FacultyService.update(req);
         sendResponse(res,result)
     } catch (error) {
        next(error) 
+       
     }
 }
 

@@ -1,8 +1,8 @@
 import { Request } from 'express';
-import { IGenericResponse } from '../../../interfaces/common';
-import { AuthService } from '../../../shared/axios';
-import { ICloudinaryResponse, IUploadFile } from '../../../interfaces/fileType';
 import { FileUploadCloudinary } from '../../../helpers/fileUpload';
+import { ICloudinaryResponse, IUploadFile } from '../../../interfaces/fileType';
+import { AuthService } from '../../../shared/axios';
+import { IGenericResponse } from '../../../interfaces/common';
 import ApiError from '../../../errors/apiError';
 import httpStatus from 'http-status';
 
@@ -13,21 +13,18 @@ type ApiResponse = {
   data: any;
 };
 
-const create = async (req: Request): Promise<IGenericResponse> => {
+const create_student = async (req: Request): Promise<IGenericResponse> => {
   const headers = {
     Authorization: `${req.headers.authorization}`
   };
 
-  const file = req.file as IUploadFile;
-
-
   const queryParams = new URLSearchParams({
-    email: req.body.faculty.email,
-    contactNo: req.body.faculty.contactNo
+    email: req.body.student.email,
+    contactNo: req.body.student.contactNo
   }).toString();
 
   const checkInDuplicate: ApiResponse = await AuthService.get(
-    `/faculties/checkDuplicate?${queryParams}`,
+    `/students/checkDuplicate?${queryParams}`,
     { headers }
   );
 
@@ -37,31 +34,30 @@ const create = async (req: Request): Promise<IGenericResponse> => {
     checkInDuplicate.success === true &&
     checkInDuplicate.data !== null
   ) {
-
-    await FileUploadCloudinary.unSyncFile(file)
     return {
       statusCode: 409,
       success: false,
-      message: 'Faculty already exists with the provided email or contact number',
+      message: 'Student already exists with the provided email or contact number',
       data: null
     };
   }
 
   // FileUploadCloudinary.uploadToCludinary(req.file)
+  const file = req.file as IUploadFile;
   const uploadImage: ICloudinaryResponse = await FileUploadCloudinary.uploadToCludinary(file);
 
   if (uploadImage) {
-    req.body.faculty.profileImage = uploadImage.secure_url;
+    req.body.student.profileImage = uploadImage.secure_url;
   }
 
-  const { academicDepartment, academicFaculty } = req.body.faculty;
+  const { academicDepartment, academicFaculty, academicSemester } = req.body.student;
 
   const academicDepartmentResponse = await AuthService.get(
     `/academicDepartment?syncId=${academicDepartment}`,
     { headers }
   );
   if (academicDepartmentResponse.data && Array.isArray(academicDepartmentResponse.data)) {
-    req.body.faculty.academicDepartment = academicDepartmentResponse.data[0].id;
+    req.body.student.academicDepartment = academicDepartmentResponse.data[0].id;
   }
 
   const academicFacultyResponse = await AuthService.get(
@@ -69,67 +65,65 @@ const create = async (req: Request): Promise<IGenericResponse> => {
     { headers }
   );
   if (academicFacultyResponse.data && Array.isArray(academicFacultyResponse.data)) {
-    req.body.faculty.academicFaculty = academicFacultyResponse.data[0].id;
+    req.body.student.academicFaculty = academicFacultyResponse.data[0].id;
   }
 
-  
-  const response: IGenericResponse = await AuthService.post('/users/create-faculty', req.body, {
+  const academicSemesterResponse = await AuthService.get(
+    `/academicSemester?syncId=${academicSemester}`,
+    { headers }
+  );
+  if (academicSemesterResponse.data && Array.isArray(academicSemesterResponse.data)) {
+    req.body.student.academicSemester = academicSemesterResponse.data[0].id;
+  }
+
+  const response: IGenericResponse = await AuthService.post('/users/create-student', req.body, {
     headers
   });
 
   return response;
 };
 
-const singleFaculty = async (req: Request): Promise<IGenericResponse> => {
+const singleStudent = async (req: Request): Promise<IGenericResponse> => {
   const headers = {
     Authorization: `${req.headers.authorization}`
   };
 
-  const response: IGenericResponse = await AuthService.get(`/faculties/${req.params.id}`, {
+  const response: IGenericResponse = await AuthService.get(`/students/${req.params.id}`, {
     headers
   });
   return response;
 };
 
-const allFaculty = async (req: Request): Promise<IGenericResponse> => {
+const allStudent = async (req: Request): Promise<IGenericResponse> => {
   const headers = {
     Authorization: `${req.headers.authorization}`
   };
 
-  const response: IGenericResponse = await AuthService.get(`/faculties`, {
+  const response: IGenericResponse = await AuthService.get(`/students`, {
     headers
   });
   return response;
 };
 
 const update = async (req: Request): Promise<IGenericResponse> => {
- 
-  const headers = {
-    Authorization: `${req.headers.authorization}`
-  };
-
-  const isFacultyExist = await AuthService.get(`/faculties/${req.params.id}`,{headers});
-  
-  if (!isFacultyExist) {
+  const isStudentExist = await AuthService.get(`/students/${req.params.id}`);
+  if (!isStudentExist) {
     if (req.file) {
       await FileUploadCloudinary.unSyncFile(req.file);
     }
-    throw new ApiError(httpStatus.NOT_FOUND, 'This faculty not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'This user not found');
   }
-  
 
   let uploadImage: ICloudinaryResponse | null = null;
 
-  if (req.file && !isFacultyExist.data.profileImage) {
+  if (req.file && !isStudentExist.data.profileImage) {
     const file = req.file as IUploadFile;
     uploadImage = await FileUploadCloudinary.uploadToCludinary(file);
-  } 
-  else if (req.file && isFacultyExist.data.profileImage) 
-  {
+  } else if (req.file && isStudentExist.data.profileImage) {
     const file = req.file as IUploadFile;
     try {
       const isDeleted = await FileUploadCloudinary.deleteFromCloudinary(
-        isFacultyExist.data.profileImage,
+        isStudentExist.data.profileImage,
         'single'
       );
       if (isDeleted.result === 'ok') {
@@ -142,33 +136,17 @@ const update = async (req: Request): Promise<IGenericResponse> => {
     }
   }
 
-
-  const transformedBody = {
-    name: req.body.faculty.name,
-    dateOfBirth: req.body.faculty.dateOfBirth,
-    gender: req.body.faculty.gender,
-    bloodGroup: req.body.faculty.bloodGroup,
-    email: req.body.faculty.email,
-    contactNo: req.body.faculty.contactNo,
-    emergencyContactNo: req.body.faculty.emergencyContactNo,
-    presentAddress: req.body.faculty.presentAddress,
-    permanentAddress: req.body.faculty.permanentAddress,
-    department: req.body.faculty.department,
-    designation: req.body.faculty.designation,
-    password: req.body.password,
-  };
-
   if (uploadImage) {
-    req.body.profileImage = uploadImage.url;
+    req.body.student.profileImage = uploadImage.url;
   }
 
-  
+  const headers = {
+    Authorization: `${req.headers.authorization}`
+  };
 
-  const response: IGenericResponse = await AuthService.put(
-    `/faculties/${req.params.id}`,
-    transformedBody,
-    { headers }
-  );
+  const response: IGenericResponse = await AuthService.put(`/students/${req.params.id}`, req.body, {
+    headers
+  });
   return response;
 };
 
@@ -177,19 +155,16 @@ const remove = async (req: Request): Promise<IGenericResponse> => {
     Authorization: `${req.headers.authorization}`
   };
 
-  
-  const response: IGenericResponse = await AuthService.delete(`/faculties/${req.params.id}`, {
+  const response: IGenericResponse = await AuthService.delete(`/students/${req.params.id}`, {
     headers
   });
   return response;
 };
 
-
-
-export const FacultyService = {
-  create,
-  singleFaculty,
-  allFaculty,
+export const StudentService = {
+  create_student,
+  singleStudent,
+  allStudent,
   update,
   remove
 };

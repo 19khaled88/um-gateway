@@ -23,8 +23,13 @@ router.post(
 router.put(
   '/:id',
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.FACULTY),
-  validateRequest(FacultyValidation.updateFacultyZodSchema),
-  FacultyController.update
+  FileUploadCloudinary.upload.single('file'),
+  (req:Request,res:Response,next:NextFunction)=>{
+    req.body = FacultyValidation.updateFacultyZodSchema.parse(JSON.parse(req.body.data))
+    FacultyController.update(req,res,next)
+  }
+  
+ 
 );
 
 router.delete('/:id',auth(ENUM_USER_ROLE.ADMIN,ENUM_USER_ROLE.SUPER_ADMIN,ENUM_USER_ROLE.FACULTY),FacultyController.remove)

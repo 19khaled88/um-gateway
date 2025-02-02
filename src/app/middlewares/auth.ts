@@ -7,30 +7,30 @@ import { IAuthUser } from '../../interfaces/auth';
 const auth =
   (...requiredRoles: string[]) =>
     async (req: any, res: Response, next: NextFunction) => {
-      return new Promise(async (resolve, reject) => {
+      try {
         const token = req.headers.authorization;
-
-       
+  
         if (!token) {
-          return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized'));
+          throw new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized');
         }
-
+  
         const verifiedUser: IAuthUser = JwtHelper.verifyToken(token);
-
+  
         if (!verifiedUser) {
-          return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized'));
+          throw new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized');
         }
-
+  
         req.user = verifiedUser;
-
+  
         if (requiredRoles.length && !requiredRoles.includes(verifiedUser.role)) {
-          return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+          throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
+          
         }
-
-        resolve(verifiedUser);
-      })
-        .then(() => next())
-        .catch((err) => next(err));
+  
+        next(); // Move to the next middleware
+      } catch (err) {
+        next(err); // Pass the error to the global error handler
+      }
     };
 
 export default auth;
