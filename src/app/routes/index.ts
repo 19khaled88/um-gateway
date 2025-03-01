@@ -8,6 +8,7 @@ import { AuthRoutes } from '../modules/auth/route';
 import { FacultyRoutes } from '../modules/faculty/route';
 import { StudentRoutes } from '../modules/student/route';
 import { ManagementDepartmentRoutes } from '../modules/managementDepartment/route';
+import { SuperAdminRoutes } from '../modules/super-admin/route';
 
 const router = express.Router();
 
@@ -39,6 +40,10 @@ const moduleRoutes = [
   {
     path:'/faculty-gateway',
     routes:FacultyRoutes
+  },
+  {
+    path:'/super-admin-gateway',
+    routes: SuperAdminRoutes,
   },
   {
     path:'/management-gateway',
